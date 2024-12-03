@@ -14,13 +14,36 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Changed
 
+- In order to obtain the audio stored by the `AudioBufferProcessor` you now need
+  to register an `on_audio_data` event handler. The `on_audio_data` handler will
+  be called every time `buffer_size` (a new constructor argument) is reached or
+  if `buffer_size` is 0 (default) it will be called when the processor gets
+  cleaned up when the pipeline finishes.
+
+```
+@audiobuffer.event_handler("on_audio_data")
+async def on_audio_data(processor, audio, sample_rate, num_channels):
+    await save_audio(audio, sample_rate, num_channels)
+```
+
+- All input frames (text, audio, image, etc.) are now system frames. This means
+  they are processed immediately by all processors instead of being queued
+  internally.
+
 - Expanded the transcriptions.language module to support a superset of
   languages.
 
 - Updated STT and TTS services with language options that match the supported
   languages for each service.
 
+### Removed
+
+- Removed `AppFrame`. This was used as a special user custom frame, but there's
+  actually no use case for that.
+
 ### Fixed
+
+- `AudioBufferProcessor` now handles interruptions properly.
 
 - Fixed a `WebsocketServerTransport` issue that would prevent interruptions with
   `TwilioSerializer` from working.
